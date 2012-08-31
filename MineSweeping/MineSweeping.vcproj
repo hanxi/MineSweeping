@@ -188,6 +188,30 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="gui"
+				>
+				<File
+					RelativePath=".\gui\GameObject.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\gui\gui.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="core"
+				>
+				<File
+					RelativePath=".\core\Mines.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\core\SweepInterface.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Í·ÎÄ¼þ"
@@ -219,6 +243,18 @@
 				>
 				<File
 					RelativePath=".\test\test.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="core"
+				>
+				<File
+					RelativePath=".\core\Mines.h"
+					>
+				</File>
+				<File
+					RelativePath=".\core\SweepInterface.h"
 					>
 				</File>
 			</Filter>

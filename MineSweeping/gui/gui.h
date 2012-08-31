@@ -5,23 +5,29 @@
 #include <cassert>
 #include <memory>
 #include <iostream>
-#include "FLTK.h"
-#include "globalVal.h"
+#include "../FLTK.h"
+#include "../globalVal.h"
 #include "GameObject.h"
+#include "../core/SweepInterface.h"
 
-const float initBlockWidth = 50;//初始格子像素大小
-const float initBlockHeight = 50;
-const int initColumns = 5;//初始行数
-const int initLines = 5;
 using std::auto_ptr;
+using std::cout;
+using std::endl;
 
 class GUI
 {
-public:
+private:
+	static GUI* m_pGUI;
 	GUI(void);
+public:
+	static GUI* getInstance();
+	static void releaseInstance();
+	~GUI(void) {releaseInstance();}
 
-	void loadSetting(void);//载入屏幕大小，暂时使用全局变量
+public:
+
 	void setLevel(int a_level);//设置游戏的难度，即设置行数和列数
+	void clickOpen(int a_line, int a_colum);
 
 	void show(void);
 
@@ -35,7 +41,23 @@ private:
 	int m_numberColumns;//列数
 	float m_width;
 	float m_height;
+	SweepInterface m_coreMines;//核心算法
+	vector<OpenGridMsg> m_leftClickMsg;
 };
+
+inline GUI* GUI::getInstance()
+{
+	if(m_pGUI==NULL)
+	{
+		m_pGUI=new GUI();
+	}
+	return m_pGUI;
+}
+inline void GUI::releaseInstance()
+{
+	delete m_pGUI;
+	m_pGUI = NULL;
+}
 
 inline GUI::GUI(void)
 :m_width(initBlockWidth*initColumns),m_height(initBlockHeight*initLines)
@@ -53,22 +75,22 @@ inline void GUI::show(void)
 }
 inline void GUI::createGameObjects(void)
 {
-	m_grid.clear();
+	//知道大小的情况下，优先使用resize()
+	m_grid.resize(m_numberLines);
 	std::vector<GridBlock> grids;
+	grids.resize(m_numberColumns);
 	for (int i=0; i<m_numberLines; i++)
 	{
-		grids.clear();
 		for (int j=0; j<m_numberColumns; j++)
 		{
-			GridBlock gridBlock("res/images/grid.jpg");
-			gridBlock.setPosition(i*initBlockWidth,j*initBlockHeight);
+			GridBlock gridBlock(imageName[mineInit]);
+			gridBlock.setPosition(j*initBlockWidth,i*initBlockHeight);
 			gridBlock.setSize(initBlockWidth,initBlockHeight);
-			grids.push_back(gridBlock);
+			gridBlock.setLineColumn(i,j);//设置行号和列号
+			grids[j] = gridBlock;
 		}
-		m_grid.push_back(grids);
+		m_grid[i] = grids;
 	}
-	m_grid[0][0].setImage("res/images/grid.jpg");
-	m_grid[0][0].setSize(initBlockWidth,initBlockHeight);
 }
 
 #endif
