@@ -1,6 +1,8 @@
 #ifndef GLOBAL_VAL_H_
 #define GLOBAL_VAL_H_
 
+extern const int dialogWindowWidth;//对话框大小
+extern const int dialogWindowHeight;
 extern const int SCREEN_WIDTH;
 extern const int SCREEN_HEIGHT;
 extern const char const* imageName[];
@@ -9,6 +11,14 @@ extern const int initColumns;//初始行数
 extern const int initLines;
 extern const float initBlockWidth;//初始格子像素大小
 extern const float initBlockHeight;
+class Fl_Menu_Item;
+extern const int menuBarHeight;//菜单栏高度
+extern const Fl_Menu_Item menuItems[];//菜单
+
+
+//中文字符串
+extern const char const* dialogWindowStr[];
+extern const char const* GUIStr[];
 
 
 //用于传递点开的格子的位置和数字的消息结构体

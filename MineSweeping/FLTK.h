@@ -5,6 +5,10 @@
 #include <FL/Fl_Window.H>
 #include <FL/fl_ask.H>
 #include <FL/Fl_Menu_Window.H>
+#include <FL/Fl_Menu_Bar.H>
+#include <FL/Fl_Menu_Button.H>
+#include <FL/fl_draw.H>
+#include <FL/Fl_Int_Input.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Image.H>

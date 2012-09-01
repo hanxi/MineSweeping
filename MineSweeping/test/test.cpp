@@ -9,21 +9,21 @@ void Test::test_globalval(void)
 	cout << "SCREEN_WIDTH=" << SCREEN_WIDTH << endl;
 	cout << "SCREEN_HEIGHT=" << SCREEN_HEIGHT << endl;
 }
-/*
-void Test::test_copy_construdtor(GameObject& t1, GameObject& t2)
+void Test::test_GridBlock(vector<vector<GridBlock> >& vv)
 {
-	//≤‚ ‘øΩ±¥ππ‘Ï∫Ø ˝
-	t2.setSize(800,500);
-	t1 = t2;
-	t2.setSize(300,400);
-//	t1.setSize(800,300);
-	t2 = t1;
-	t1.setSize(700,500);
-	t1 = t2;
-	t2.setSize(700,400);
+	vv.clear();
+	vv.resize(10);
+	vector<GridBlock> v;
+	v.resize(10);
+	for (int i=0; i<10; i++)
+	{
+		for (int j=0; j<10; j++)
+		{
+			GridBlock t(imageName[mineBoom]);
+			t.setPosition(initBlockWidth,initBlockHeight);
+			t.setSize(initBlockWidth,initBlockHeight);
+			v[j] = t;
+		}
+		vv[i] = v;
+	}
 }
-void Test::test_ImageBox(ImageBox& t)
-{
-	t.setSize(250,250);
-}
-*/

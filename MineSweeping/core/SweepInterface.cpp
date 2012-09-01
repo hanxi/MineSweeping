@@ -30,7 +30,7 @@ void SweepInterface::clickOpen(int i, int j, vector<OpenGridMsg>& msg)
 		amsg.i = i;
 		amsg.j = j;
 		amsg.state = m_mines.countRoundMines(i,j);
-		cout << "(" << i << "," << j <<")周围雷数：" << amsg.state << endl;
+//		cout << "(" << i << "," << j <<")周围雷数：" << amsg.state << endl;
 		msg.push_back(amsg);
 		if (amsg.state == 0)//如果周围没有雷，继续点开周围的
 		{

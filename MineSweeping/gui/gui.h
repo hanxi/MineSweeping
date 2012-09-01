@@ -13,6 +13,7 @@
 using std::auto_ptr;
 using std::cout;
 using std::endl;
+using std::vector;
 
 class GUI
 {
@@ -25,19 +26,20 @@ public:
 	~GUI(void) {releaseInstance();}
 
 public:
-
 	void setLevel(int a_level);//设置游戏的难度，即设置行数和列数
+	void setLevelSelf(int a_H, int a_W, int a_C);//自定义行列
 	void clickOpen(int a_line, int a_colum);
-
-	void show(void);
+	void rightClick(int a_line, int a_colum);//右键事件
 
 protected:
 	void createGameObjects(void);
 
 private:
 	auto_ptr<Fl_Menu_Window> m_pWindow;//主窗体
-	std::vector<std::vector<GridBlock> > m_grid;//网格
+	vector<vector<GridBlock> > m_grid;//网格
+	auto_ptr<Fl_Menu_Bar> m_pMenuBar;//菜单
 
+	int m_level;//等级，等于0时为自定义
 	int m_numberLines;//行数
 	int m_numberColumns;//列数
 	int m_minesCount;//雷的个数
@@ -46,12 +48,17 @@ private:
 	SweepInterface m_coreMines;//核心算法
 	vector<OpenGridMsg> m_leftClickMsg;
 
-	void replayDialog(void);//GameOver对话框
+	void winnerDialog(void);//胜利对话框
+	int replayDialog(void);//GameOver对话框
 	void openAll(void);
+	void GUI::RankingsDialog(void);//排行榜对话框
+	static void window_callback(Fl_Widget*, void*);	//退出对话框
+	static void menuCB(Fl_Widget* w, void*);
+	void updateMap(void);	//更新地图
+	void updateWindow(void);
+	void saveRecord(int a_useTime, const char* a_userName);//保存记录
 };
 
-//退出对话框
-void window_callback(Fl_Widget*, void*);
 
 inline GUI* GUI::getInstance()
 {
@@ -69,36 +76,39 @@ inline void GUI::releaseInstance()
 
 inline GUI::GUI(void)
 :m_width(initBlockWidth*initColumns),m_height(initBlockHeight*initLines),
-m_minesCount(initMinesCount)
+m_minesCount(initMinesCount),m_level(1)
 {
 	m_numberColumns = initColumns;
 	m_numberLines = initLines;
-	m_pWindow.reset(new Fl_Menu_Window(m_width,m_height,"扫雷（FLTK版）"));
-	m_pWindow->callback(window_callback);
+	m_pWindow.reset(new Fl_Menu_Window(m_width,m_height+menuBarHeight,GUIStr[0]));
+	m_pMenuBar.reset(new Fl_Menu_Bar(0,0,m_width,menuBarHeight));
+	m_pMenuBar->menu(menuItems);//载入MenuItem
+	m_pMenuBar->callback(&GUI::menuCB);
+	m_pWindow->callback(&GUI::window_callback);
 	m_pWindow->begin();//往窗体里面添加对象
 		createGameObjects();
 	m_pWindow->end();
-}
-inline void GUI::show(void)
-{
 	m_pWindow->show();
 }
+
 inline void GUI::createGameObjects(void)
 {
 	//知道大小的情况下，优先使用resize()
 	m_grid.resize(m_numberLines);
-	std::vector<GridBlock> grids;
+	vector<GridBlock> grids;
 	grids.resize(m_numberColumns);
 	for (int i=0; i<m_numberLines; i++)
 	{
 		for (int j=0; j<m_numberColumns; j++)
 		{
 			GridBlock gridBlock(imageName[mineInit]);
-			gridBlock.setPosition(j*initBlockWidth,i*initBlockHeight);
+			gridBlock.setPosition(j*initBlockWidth,i*initBlockHeight+menuBarHeight);
 			gridBlock.setSize(initBlockWidth,initBlockHeight);
 			gridBlock.setLineColumn(i,j);//设置行号和列号
 			grids[j] = gridBlock;
 		}
+//		cout << "girds.size = " << grids.size() << endl;
+//		cout << "m_gird[i].size = " << m_grid[i].size() << endl;
 		m_grid[i] = grids;
 	}
 }

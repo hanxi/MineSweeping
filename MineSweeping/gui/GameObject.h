@@ -5,11 +5,15 @@
 #include <cassert>
 #include <memory>
 #include <iostream>
+#include <string>
 #include "../globalVal.h"
 
 //mineInit=10, mark=12, markUnknow=14
 const int markImage[] = {10,12,14};
 using std::auto_ptr;
+using std::cout;
+using std::endl;
+using std::string;
 
 //用于放置图片的图片框
 class GridBlock:public Fl_Box
@@ -19,9 +23,11 @@ public:
 	GridBlock(const char* filename);
 	GridBlock(const GridBlock& a_rightSide);
 	GridBlock& operator=(const GridBlock& a_rightSide);
+	~GridBlock(void) {}
 
 	//设置图片
 	void setImage(const char *filename);
+	const char* getImageName(void) const {return m_pSharedImage->name();}
 	void setDisable() {m_enable = false;}
 	bool isEnable()const {return m_enable;}
 	bool isMark()const {return m_rightClickNumber==1;}//是否标记了红旗
@@ -130,10 +136,8 @@ inline void GridBlock::setSize(int a_width, int a_height)
 //Event处理
 inline int GridBlock::handle(int event)
 {
-	if (parent()->handle(event)) return 1;
+	if (Fl_Box::handle(event)) return 1;//禁用父类的事件
 	if (!m_enable) return (0);//点开数字后失去操作权
-	using std::cout;
-	using std::endl;
 	switch (event)
 	{
 	case FL_PUSH:
@@ -142,8 +146,8 @@ inline int GridBlock::handle(int event)
 		case FL_LEFT_MOUSE:
 			if (m_isableLeftClick)
 			{
-				cout << "你点击了鼠标左键" << endl;
-				cout << "i=" << m_lineNumber << ",j=" << m_columnNumber << endl;
+//				cout << "你点击了鼠标左键" << endl;
+//				cout << "i=" << m_lineNumber << ",j=" << m_columnNumber << endl;
 				leftClick();//鼠标左击事件处理
 			}
 			break;
@@ -156,25 +160,6 @@ inline int GridBlock::handle(int event)
 	return 0;
 }
 
-//处理右击事件：状体转换，更换图片。如果是“红旗”和“问号”状体则置不可响应左击事件，否则置可响应左击事件
-inline void GridBlock::rightClick(void)
-{
-	m_rightClickNumber++;
-	if (m_rightClickNumber>2)
-	{
-		m_rightClickNumber=0;
-	}
-	setImage(imageName[markImage[m_rightClickNumber]]);
-	//在标记状态下停止响应左击事件
-	if (m_rightClickNumber == 0)
-	{
-		m_isableLeftClick = true;
-	}
-	else
-	{
-		m_isableLeftClick = false;		
-	}
-}
 
 class ImageBox
 {
@@ -186,5 +171,58 @@ public:
 private:
 	GridBlock m_box;
 };
+
+//对话框使用单例模式
+class DialogWindow:public Fl_Single_Window
+{
+private:
+	static DialogWindow* m_pDialogWindow;
+	DialogWindow(void);
+public:
+	static DialogWindow* getInstance();
+	static void releaseInstance();
+	~DialogWindow(void) {releaseInstance();}
+
+private:
+	void createObjects(void);
+	auto_ptr<Fl_Button> m_pButtons[2];
+	auto_ptr<Fl_Int_Input> m_pInputs[3];
+	static void dialogWindowCB(Fl_Widget* w, void*);
+	static void DialogWindow::OkCB(Fl_Widget* w);
+	static void DialogWindow::CancelCB(Fl_Widget* w);
+};
+
+inline DialogWindow* DialogWindow::getInstance()
+{
+	if(m_pDialogWindow==NULL)
+	{
+		m_pDialogWindow=new DialogWindow();
+	}
+	return m_pDialogWindow;
+}
+inline void DialogWindow::releaseInstance()
+{
+	delete m_pDialogWindow;
+	m_pDialogWindow = NULL;
+}
+inline DialogWindow::DialogWindow(void)
+:Fl_Single_Window(dialogWindowWidth,dialogWindowHeight,dialogWindowStr[0])
+{
+	begin();//往窗体里面添加对象
+		createObjects();
+	end();
+	show();
+}
+inline void DialogWindow::createObjects(void)
+{
+	m_pInputs[0].reset(new Fl_Int_Input(0.4*dialogWindowWidth,0.2*dialogWindowHeight,80,20,dialogWindowStr[1]));
+	m_pInputs[1].reset(new Fl_Int_Input(0.4*dialogWindowWidth,0.4*dialogWindowHeight,80,20,dialogWindowStr[2]));
+	m_pInputs[2].reset(new Fl_Int_Input(0.4*dialogWindowWidth,0.6*dialogWindowHeight,80,20,dialogWindowStr[3]));
+	m_pButtons[0].reset(new Fl_Button(0.7*dialogWindowWidth,0.3*dialogWindowHeight,80,20,dialogWindowStr[4]));//确定
+	m_pButtons[1].reset(new Fl_Button(0.7*dialogWindowWidth,0.45*dialogWindowHeight,80,20,dialogWindowStr[5]));//取消
+	callback(&DialogWindow::dialogWindowCB);
+	m_pButtons[0]->callback(&DialogWindow::OkCB);
+	m_pButtons[1]->callback(&DialogWindow::CancelCB);
+}
 
 #endif
