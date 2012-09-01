@@ -14,6 +14,9 @@ public:
 	void initMines(int a_lines, int a_columns, int a_minesCount);
 	void clickOpen(int i, int j, vector<OpenGridMsg>& msg);
 
+	bool isMine(int i, int j) { return m_mines.isMine(i,j);}
+	int roundMines(int i, int j) {return m_mines.countRoundMines(i,j);}
+
 private:
 	Mines m_mines;
 	int m_minesCount;//À×µÄ¸öÊı

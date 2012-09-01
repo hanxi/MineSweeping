@@ -23,6 +23,9 @@ public:
 	//设置图片
 	void setImage(const char *filename);
 	void setDisable() {m_enable = false;}
+	bool isEnable()const {return m_enable;}
+	bool isMark()const {return m_rightClickNumber==1;}//是否标记了红旗
+	void init();//重玩的时候需要用到
 
 	int getX(void)const {return x();}
 	int getY(void)const {return y();}
@@ -94,6 +97,14 @@ inline GridBlock& GridBlock::operator=(const GridBlock& a_rightSide)
 	return *this;
 }
 
+//重置变量
+inline void GridBlock::init()
+{
+	m_enable = true;
+	m_isableLeftClick = true;
+	m_rightClickNumber = 0;
+}
+
 //设置图片
 inline void GridBlock::setImage(const char *filename)
 {
@@ -119,6 +130,7 @@ inline void GridBlock::setSize(int a_width, int a_height)
 //Event处理
 inline int GridBlock::handle(int event)
 {
+	if (parent()->handle(event)) return 1;
 	if (!m_enable) return (0);//点开数字后失去操作权
 	using std::cout;
 	using std::endl;
@@ -163,5 +175,16 @@ inline void GridBlock::rightClick(void)
 		m_isableLeftClick = false;		
 	}
 }
+
+class ImageBox
+{
+public:
+	ImageBox(const char* filename):m_box(filename) {}
+	void setPosition(int a_x, int a_y) {m_box.setPosition(a_x,a_y);}
+	void setSize(int a_width, int a_height) {m_box.setSize(a_width,a_height);}
+
+private:
+	GridBlock m_box;
+};
 
 #endif

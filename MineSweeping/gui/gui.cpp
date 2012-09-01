@@ -12,11 +12,14 @@ void GUI::clickOpen(int a_line, int a_colum)
 	cout << "in GUI::clickOpen()" << endl;
 	m_leftClickMsg.clear();
 	m_coreMines.clickOpen(a_line, a_colum,m_leftClickMsg);
-	if (m_leftClickMsg[0].state == mineBoom)//µÚÒ»¸öÊÇÀ×£¬GameOver
+	if (m_leftClickMsg[0].state == mineBoom)//ç¬¬ä¸€ä¸ªæ˜¯é›·ï¼ŒGameOver
 	{
-		m_grid[m_leftClickMsg[0].i][m_leftClickMsg[0].j].setImage(imageName[mineBoom]);
 		cout << "Game Over!" << endl;
-		//È»ºó¸ø³ö"ÖØÀ´ÍË³ö¶Ô»°¿ò"
+		openAll();
+		m_grid[m_leftClickMsg[0].i][m_leftClickMsg[0].j].setImage(imageName[mineBoom]);
+		//ç„¶åç»™å‡º"é‡æ¥é€€å‡ºå¯¹è¯æ¡†"
+		replayDialog();
+		return;
 	}
 	for (vector<OpenGridMsg>::iterator it=m_leftClickMsg.begin();
 		it != m_leftClickMsg.end(); it++)
@@ -24,4 +27,65 @@ void GUI::clickOpen(int a_line, int a_colum)
 		m_grid[it->i][it->j].setImage(imageName[it->state]);
 		m_grid[it->i][it->j].setDisable();
 	}
+}
+
+void GUI::replayDialog(void)//GameOverå¯¹è¯æ¡†
+{
+	int hotspot = fl_message_hotspot();
+	fl_message_hotspot(0);
+	fl_message_title("Game Over!");
+	int rep = fl_choice("é‡æ–°å¼€å§‹ï¼Ÿ",
+		"Level", "Replay", "Exit");
+	fl_message_hotspot(hotspot);
+	if (rep==2) 
+		exit(0);
+	else if (rep == 1)
+	{
+		m_coreMines.initMines(m_numberLines,m_numberColumns,m_minesCount);
+		for (int i=0; i<m_numberLines; i++)
+		{
+			for (int j=0; j<m_numberColumns; j++)
+			{
+				m_grid[i][j].init();
+				m_grid[i][j].setImage(imageName[mineInit]);
+			}
+		}
+	}
+}
+
+//æ‰“å¼€æ‰€æœ‰çš„ï¼ŒGameOver
+void GUI::openAll(void)
+{
+	for (int i=0; i<m_numberLines; i++)
+	{
+		for (int j=0; j<m_numberColumns; j++)
+		{
+			if (m_grid[i][j].isEnable())
+			{
+				if (m_coreMines.isMine(i,j))
+				{
+					m_grid[i][j].setImage(imageName[mineOut]);
+				}
+				else if (m_grid[i][j].isMark())//æ ‡è®°é”™è¯¯
+				{
+					m_grid[i][j].setImage(imageName[markWrong]);
+				}
+				else
+				{
+					m_grid[i][j].setImage(imageName[m_coreMines.roundMines(i,j)]);
+				}
+			}
+		}
+	}
+}
+
+void window_callback(Fl_Widget*, void*)
+{
+	int hotspot = fl_message_hotspot();
+	fl_message_hotspot(0);
+	fl_message_title("Exit");
+	int rep = fl_ask("ç¡®å®šé€€å‡ºï¼Ÿ");
+	fl_message_hotspot(hotspot);
+	if (rep==1) 
+		exit(0);
 }

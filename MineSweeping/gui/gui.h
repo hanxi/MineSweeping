@@ -35,15 +35,23 @@ protected:
 	void createGameObjects(void);
 
 private:
-	auto_ptr<Fl_Window> m_pWindow;//主窗体
+	auto_ptr<Fl_Menu_Window> m_pWindow;//主窗体
 	std::vector<std::vector<GridBlock> > m_grid;//网格
+
 	int m_numberLines;//行数
 	int m_numberColumns;//列数
+	int m_minesCount;//雷的个数
 	float m_width;
 	float m_height;
 	SweepInterface m_coreMines;//核心算法
 	vector<OpenGridMsg> m_leftClickMsg;
+
+	void replayDialog(void);//GameOver对话框
+	void openAll(void);
 };
+
+//退出对话框
+void window_callback(Fl_Widget*, void*);
 
 inline GUI* GUI::getInstance()
 {
@@ -60,11 +68,13 @@ inline void GUI::releaseInstance()
 }
 
 inline GUI::GUI(void)
-:m_width(initBlockWidth*initColumns),m_height(initBlockHeight*initLines)
+:m_width(initBlockWidth*initColumns),m_height(initBlockHeight*initLines),
+m_minesCount(initMinesCount)
 {
 	m_numberColumns = initColumns;
 	m_numberLines = initLines;
-	m_pWindow.reset(new Fl_Window(m_width,m_height,"扫雷（FLTK版）"));
+	m_pWindow.reset(new Fl_Menu_Window(m_width,m_height,"扫雷（FLTK版）"));
+	m_pWindow->callback(window_callback);
 	m_pWindow->begin();//往窗体里面添加对象
 		createGameObjects();
 	m_pWindow->end();
