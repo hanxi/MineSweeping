@@ -37,12 +37,15 @@ void GUI::updateWindow(void)
 {
 	m_width=initBlockWidth*m_numberColumns;
 	m_height=initBlockHeight*m_numberLines;
-	m_pWindow->size(m_width,m_height+menuBarHeight);
+	m_pWindow->size(m_width,m_height+menuBarHeight+timeShowBoxHeight);
 	m_pMenuBar->size(m_width,menuBarHeight);
+	m_pTimeShowBox->resize(0,menuBarHeight,m_width,timeShowBoxHeight);
 	m_pWindow->begin();//往窗体里面添加对象
 	createGameObjects();
 	m_pWindow->end();
 	m_pWindow->show();
+	m_pTimeShowBox->setMarkMines(0);
+	m_pTimeShowBox->setRemainMines(m_minesCount);
 	updateMap();
 }
 
@@ -57,12 +60,14 @@ void GUI::setLevelSelf(int a_H, int a_W, int a_C)
 
 void GUI::rightClick(int a_line, int a_colum)
 {
+	countMarkMines();
 	if (strcmp(m_grid[a_line][a_colum].getImageName(),
 		imageName[markUnknow]) != 0)//如果不是问号就做判断
 	{
 		int i=0,j=0;
 		for (; i<m_numberLines; i++)
 		{
+			j=0;//最开始的时候忘记这句了
 			for (; j<m_numberColumns; j++)
 			{
 				if (strcmp(m_grid[i][j].getImageName(),imageName[mineInit]) == 0)
@@ -86,81 +91,110 @@ void GUI::rightClick(int a_line, int a_colum)
 			winnerDialog();//胜利对话框
 		}
 	}
-	winnerDialog();//胜利对话框
 }
 
+void GUI::countMarkMines(void)
+{
+	//已标记雷数
+	int markCount=0;
+	for (int i=0; i<m_numberLines; i++)
+	{
+		for (int j=0; j<m_numberColumns; j++)
+		{
+			if (strcmp(m_grid[i][j].getImageName(),imageName[mark]) == 0) markCount++;
+		}
+	}
+	//显示标记的雷的数量
+	m_pTimeShowBox->setMarkMines(markCount);
+	m_pTimeShowBox->setRemainMines(m_minesCount-markCount);
+}
 void GUI::winnerDialog(void)
 {
+	g_isPauseTime=true;//暂停时间
 	int hotspot = fl_message_hotspot();
 	fl_message_hotspot(0);
 	fl_beep(FL_BEEP_MESSAGE);
+	fl_message_hotspot(hotspot);
 	fl_message_title(GUIStr[8]);
-	int useTime = 109;//下一步的任务是计算时间
-	const char* name;
+	int time = g_useTime;				//使用的是全局变量计算时间
+	char name[20]="";
 	if (m_level != 0)
 	{
-		name = fl_input(GUIStr[9],"",useTime);
+		const char* str = fl_input(GUIStr[9],"",time);
+		if (strlen(name)==0)
+		{
+			strcpy(name,GUIStr[12]);//匿名
+		}
+		else
+		{
+			strcpy(name,str);
+		}
 	}
 	else
 	{
-		fl_message(GUIStr[10],useTime);
+		fl_message(GUIStr[10],time);
+		return;
 	}
-	fl_message_hotspot(hotspot);
-	if (strlen(name))
-	{
-		saveRecord(useTime,name);//保存记录
-	}
+	saveRecord(time,name);//保存记录
 }
 void GUI::saveRecord(int a_useTime, const char* a_userName)
 {
 	assert(m_level!=0);
-	using std::fstream;
-	using std::ios;
-	fstream f(GUIStr[11],ios::in);
-	string str;
-	int i=0;
-	while(getline(f,str))
-	{
-		i++;
-	}
-	f.close();
-	if (i<2)
-	{
-		f.open(GUIStr[11],ios::out);
-		f<<"\n\n";
-		f.close();
-	}
-	f.open(GUIStr[11],ios::in);
-	fstream bk("bk.txt");
-	while (char ch = f.get())
-	{
-		bk.put(ch);
-	}
-	bk.close();
-	f.close();
+	using std::ofstream;
+	using std::ifstream;
+	ofstream writeFile;
+	ifstream readFile;
 
-	f.open(GUIStr[11],ios::out);
-	bk.open("bk",ios::in);
-	int l=0;
-	while (getline(bk,str))
+	//备份
+	string text;
+	string str;
+	readFile.open(GUIStr[11]);
+	while (getline(readFile,str))
 	{
-		l++;
-		if (l==m_level)
+		text += str+"\n";
+	}
+//	cout <<"text:"<< text;
+	readFile.close();
+
+	writeFile.open(GUIStr[11]);
+	for (int i=1; i<4; i++)
+	{
+		int b = text.find_first_of('\n',0);
+		str = text.substr(0,b);
+//		cout <<"str:"<< str;
+		text = text.substr(b+1,text.length()-b);
+//		cout <<"text:"<< text;
+//		cout << i << ":" << str << endl;
+		if (i==m_level)
 		{
-			int oldTime;
-			std::stringstream stream;
-			stream<<str;
-			stream>>oldTime;
-			if (oldTime>a_useTime)
+//			cout << m_level << "级:" << str;
+			if (str.length()==0)
 			{
-				f<<a_useTime<<"\t"<<a_userName<<"\n";
-				continue;
+				writeFile<<a_useTime<<"\t"<<a_userName<<"\n";
+			}
+			else
+			{
+				int index = str.find('\t');
+				string s = str.substr(0,index);//记住后面的参数是num
+				int time = atoi(s.c_str());
+//				cout << "old:" << time << endl;
+//				cout << "new:" << a_useTime << endl;
+				if (time>a_useTime)//更新记录
+				{
+					writeFile<<a_useTime<<"\t"<<a_userName<<"\n";
+				}
+				else
+				{
+					writeFile<<str<<"\n";
+				}
 			}
 		}
-		f<<str<<"\n";
+		else
+		{
+			writeFile<<str<<"\n";
+		}
 	}
-	bk.close();
-	f.close();
+	writeFile.close();
 }
 
 void GUI::clickOpen(int a_line, int a_colum)
@@ -195,6 +229,8 @@ void GUI::clickOpen(int a_line, int a_colum)
 //更新地图
 void GUI::updateMap(void)
 {
+	g_useTime=0;
+	g_isPauseTime=false;
 	m_coreMines.initMines(m_numberLines,m_numberColumns,m_minesCount);
 	for (int i=0; i<m_numberLines; i++)
 	{
@@ -207,6 +243,7 @@ void GUI::updateMap(void)
 }
 int GUI::replayDialog(void)//GameOver对话框
 {
+	g_isPauseTime=true;//暂停时间
 	int hotspot = fl_message_hotspot();
 	fl_message_hotspot(0);
 	fl_message_title(GUIStr[1]);
@@ -256,11 +293,42 @@ void GUI::window_callback(Fl_Widget*, void*)
 //排行榜对话框
 void GUI::RankingsDialog(void)
 {
+	g_isPauseTime=true;//暂停时间
 	int hotspot = fl_message_hotspot();
 	fl_message_hotspot(0);
 	fl_message_title(GUIStr[7]);
-	const char* save[] = {"初级：　10秒　\t涵曦","中级：　15秒　\t匿名","高级：　20秒　\t涵曦"};//读取文件中的数据
-	fl_message("%s\n%s\n%s",save[0],save[1],save[2]);
+
+	using std::ifstream;
+	ifstream readFile(GUIStr[11]);//读取文件中的数据
+	string text;
+	string str;
+	while (getline(readFile,str))
+	{
+		text += str+"\n";
+	}
+	readFile.close();
+	cout << text;
+
+	string textout;
+	//找到str为m_level行
+	for (int i=0; i<3; i++)
+	{
+		int b = text.find_first_of('\n',0);
+		str = text.substr(0,b);
+		text = text.substr(b+1,text.length()-b);
+		int index = str.find('\t');
+		string time = str.substr(0,index);//记住后面的参数是num
+		string name = str.substr(index+1,str.length()-index);
+		cout << "time,name:" << time << "," << name << endl;
+		textout+=GUIStr[13+i]+time+GUIStr[16]+name+"\n";
+	}
+/*		"初级：　",				//13
+		"中级：　",				//14
+		"高级：　",				//15
+		"　秒　\t",				//16
+*/
+	fl_message("%s",textout.c_str());
+	g_isPauseTime=false;//恢复时间
 }
 
 void GUI::menuCB(Fl_Widget* w, void*)
@@ -304,7 +372,6 @@ void GUI::menuCB(Fl_Widget* w, void*)
 		{//发送退出信息给主窗体
 			Fl::handle_(FL_CLOSE,gui->m_pWindow.get());
 		}
-
 		printf("%s\n", m->label());
 	}
 }

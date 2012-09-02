@@ -223,10 +223,6 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\FLTK.h"
-				>
-			</File>
-			<File
 				RelativePath=".\globalVal.h"
 				>
 			</File>
@@ -245,6 +241,10 @@
 			<Filter
 				Name="test"
 				>
+				<File
+					RelativePath=".\FLTK.h"
+					>
+				</File>
 				<File
 					RelativePath=".\test\test.h"
 					>

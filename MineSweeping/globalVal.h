@@ -14,11 +14,19 @@ extern const float initBlockHeight;
 class Fl_Menu_Item;
 extern const int menuBarHeight;//菜单栏高度
 extern const Fl_Menu_Item menuItems[];//菜单
-
+extern const int timeShowBoxWidth;
+extern const int timeShowBoxHeight;
+extern int g_useTime;
+extern bool g_isPauseTime;
+extern int minH;//自定义雷区的范围
+extern int maxH;
+extern int minW;
+extern int maxW;
 
 //中文字符串
 extern const char const* dialogWindowStr[];
 extern const char const* GUIStr[];
+extern const char const* TimeShowBoxStr[];
 
 
 //用于传递点开的格子的位置和数字的消息结构体

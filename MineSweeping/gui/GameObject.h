@@ -161,15 +161,14 @@ inline int GridBlock::handle(int event)
 }
 
 
-class ImageBox
+class ImageBox:protected GridBlock
 {
 public:
-	ImageBox(const char* filename):m_box(filename) {}
-	void setPosition(int a_x, int a_y) {m_box.setPosition(a_x,a_y);}
-	void setSize(int a_width, int a_height) {m_box.setSize(a_width,a_height);}
-
-private:
-	GridBlock m_box;
+	ImageBox(void) {}
+	void setImage(const char* filename) {GridBlock::setImage(filename);}
+	void setPosition(int a_x, int a_y) {GridBlock::setPosition(a_x,a_y);}
+	void setSize(int a_width, int a_height) {GridBlock::setSize(a_width,a_height);}
+	int handle(int e) {return 0;}
 };
 
 //对话框使用单例模式
@@ -225,4 +224,86 @@ inline void DialogWindow::createObjects(void)
 	m_pButtons[1]->callback(&DialogWindow::CancelCB);
 }
 
+class TimeShowBox:public Fl_Group
+{
+private:
+	static TimeShowBox* m_pTimeShowBox;
+public:
+	static TimeShowBox* getInstance();
+	static void releaseInstance();
+	~TimeShowBox(void) {releaseInstance();}
+
+public:
+	TimeShowBox(void);
+	void resize(int a_x, int a_y, int a_width, int a_height);
+	void setRemainMines(int a_num);
+	void setMarkMines(int a_num);
+	void showTimer(int a_time);
+
+private:
+	void createObjects(void);
+	auto_ptr<Fl_Box> m_pBox[3];//显示雷的数量
+	int m_width;
+	int m_height;
+	char m_str[10];
+};
+inline TimeShowBox* TimeShowBox::getInstance()
+{
+	if(m_pTimeShowBox==NULL)
+	{
+		m_pTimeShowBox=new TimeShowBox();
+	}
+	return m_pTimeShowBox;
+}
+inline void TimeShowBox::releaseInstance()
+{
+	delete m_pTimeShowBox;
+	m_pTimeShowBox = NULL;
+}
+
+inline TimeShowBox::TimeShowBox(void)
+:Fl_Group(0,0,timeShowBoxWidth,timeShowBoxHeight,0),
+m_width(timeShowBoxWidth), m_height(timeShowBoxHeight)
+{
+	box(FL_DOWN_BOX);
+	createObjects();
+	show();
+}
+inline void TimeShowBox::resize(int a_x, int a_y, int a_width, int a_height)
+{
+	m_width = a_width;
+	m_height = a_height;
+	Fl_Group::resize(a_x,a_y, a_width,a_height);
+}
+inline void TimeShowBox::createObjects(void)
+{
+	fl_register_images();
+	begin();
+		m_pBox[0].reset(new Fl_Box(FL_DOWN_BOX,4,4,0.3*m_width,m_height-8,0));
+		m_pBox[1].reset(new Fl_Box(FL_DOWN_BOX,0.35*m_width,4,0.3*m_width,m_height-8,0));
+		m_pBox[2].reset(new Fl_Box(FL_DOWN_BOX,0.7*m_width-4,4,0.3*m_width,m_height-8,0));
+	end();
+}
+	
+inline void TimeShowBox::setRemainMines(int a_num)
+{
+	if (a_num<0) a_num=0;
+	sprintf(m_str,TimeShowBoxStr[0],a_num);
+	m_pBox[0]->copy_label(m_str);
+	m_pBox[0]->redraw_label();
+}
+
+inline void TimeShowBox::setMarkMines(int a_num)
+{
+	sprintf(m_str,TimeShowBoxStr[1],a_num);
+	m_pBox[1]->copy_label(m_str);
+	m_pBox[1]->redraw_label();
+}
+
+inline void TimeShowBox::showTimer(int a_time)
+{
+	sprintf(m_str,TimeShowBoxStr[2],a_time);
+	m_pBox[2]->copy_label(m_str);
+	m_pBox[2]->redraw_label();
+}
 #endif

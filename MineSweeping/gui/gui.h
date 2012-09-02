@@ -38,6 +38,7 @@ private:
 	auto_ptr<Fl_Menu_Window> m_pWindow;//主窗体
 	vector<vector<GridBlock> > m_grid;//网格
 	auto_ptr<Fl_Menu_Bar> m_pMenuBar;//菜单
+	TimeShowBox* m_pTimeShowBox;//时间显示器
 
 	int m_level;//等级，等于0时为自定义
 	int m_numberLines;//行数
@@ -57,6 +58,7 @@ private:
 	void updateMap(void);	//更新地图
 	void updateWindow(void);
 	void saveRecord(int a_useTime, const char* a_userName);//保存记录
+	void countMarkMines(void);
 };
 
 
@@ -78,13 +80,20 @@ inline GUI::GUI(void)
 :m_width(initBlockWidth*initColumns),m_height(initBlockHeight*initLines),
 m_minesCount(initMinesCount),m_level(1)
 {
+	g_useTime=0;
+	g_isPauseTime=false;
 	m_numberColumns = initColumns;
 	m_numberLines = initLines;
-	m_pWindow.reset(new Fl_Menu_Window(m_width,m_height+menuBarHeight,GUIStr[0]));
+	m_pWindow.reset(new Fl_Menu_Window(m_width,m_height+menuBarHeight+timeShowBoxHeight,GUIStr[0]));
 	m_pMenuBar.reset(new Fl_Menu_Bar(0,0,m_width,menuBarHeight));
 	m_pMenuBar->menu(menuItems);//载入MenuItem
 	m_pMenuBar->callback(&GUI::menuCB);
 	m_pWindow->callback(&GUI::window_callback);
+	m_pTimeShowBox = TimeShowBox::getInstance();
+	m_pTimeShowBox->resize(0,menuBarHeight,m_width,timeShowBoxHeight);
+	m_pTimeShowBox->setMarkMines(0);
+	m_pTimeShowBox->setRemainMines(m_minesCount);
+	m_pWindow->add(m_pTimeShowBox);
 	m_pWindow->begin();//往窗体里面添加对象
 		createGameObjects();
 	m_pWindow->end();
@@ -102,7 +111,7 @@ inline void GUI::createGameObjects(void)
 		for (int j=0; j<m_numberColumns; j++)
 		{
 			GridBlock gridBlock(imageName[mineInit]);
-			gridBlock.setPosition(j*initBlockWidth,i*initBlockHeight+menuBarHeight);
+			gridBlock.setPosition(j*initBlockWidth,i*initBlockHeight+menuBarHeight+timeShowBoxHeight);
 			gridBlock.setSize(initBlockWidth,initBlockHeight);
 			gridBlock.setLineColumn(i,j);//设置行号和列号
 			grids[j] = gridBlock;

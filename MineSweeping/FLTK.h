@@ -16,5 +16,6 @@
 #include <FL/Fl_Tiled_Image.H>
 #include <FL/Fl_PNG_Image.H>
 #include <FL/Fl_JPEG_Image.H>
+#include <FL/Fl_Timer.H>
 
 #endif

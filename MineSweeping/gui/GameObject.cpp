@@ -2,6 +2,7 @@
 #include "GUI.h"
 
 DialogWindow* DialogWindow::m_pDialogWindow = NULL;
+TimeShowBox* TimeShowBox::m_pTimeShowBox = NULL;
 
 //处理右击事件：状体转换，更换图片。如果是“红旗”和“问号”状体则置不可响应左击事件，否则置可响应左击事件
 void GridBlock::rightClick(void)
@@ -55,7 +56,7 @@ void DialogWindow::OkCB(Fl_Widget* w)
 	H = atoi(strH.c_str());
 	W = atoi(strW.c_str());
 	C = atoi(strC.c_str());
-	if (H>20 || H<5 || W>30 || W<5 || C>W*H)
+	if (H>maxH || H<minH || W>maxW || W<minW || C>W*H)
 	{
 		fl_alert(dialogWindowStr[6]);
 		dialog->m_pInputs[0]->value("");

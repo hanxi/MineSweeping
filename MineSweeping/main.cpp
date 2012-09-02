@@ -7,6 +7,19 @@ using namespace std;
 
 
 //
+void callback(void*)
+{
+	g_useTime++;
+	TimeShowBox::getInstance()->showTimer(g_useTime);
+//	cout << "time:" << g_useTime << endl;
+	if (g_useTime>10000)//放置溢出
+	{
+		g_useTime = 0;
+	}
+	if (g_isPauseTime) g_useTime--;
+	Fl::repeat_timeout(1.0, callback);
+}
+
 int main(void)
 {
 	cout << imageName[0] << endl;
@@ -23,6 +36,8 @@ int main(void)
 //	vector<vector<GridBlock> > vv;
 //	Test::test_GridBlock(vv);
 //	Test::test_GridBlock(vv);
+
+	Fl::add_timeout(1.0, callback);
 
 	return Fl::run();
 }
