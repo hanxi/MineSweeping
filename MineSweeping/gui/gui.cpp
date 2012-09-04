@@ -60,54 +60,40 @@ void GUI::setLevelSelf(int a_H, int a_W, int a_C)
 
 void GUI::rightClick(int a_line, int a_colum)
 {
-	countMarkMines();
-	if (strcmp(m_grid[a_line][a_colum].getImageName(),
-		imageName[markUnknow]) != 0)//如果不是问号就做判断
-	{
-		int i=0,j=0;
-		for (; i<m_numberLines; i++)
-		{
-			j=0;//最开始的时候忘记这句了
-			for (; j<m_numberColumns; j++)
-			{
-				if (strcmp(m_grid[i][j].getImageName(),imageName[mineInit]) == 0)
-				{//如果还有没标记点开或者没标记的
-					break;
-				}
-				if (strcmp(m_grid[i][j].getImageName(),imageName[mark]) == 0
-					&& !m_coreMines.isMine(i,j))//该位置被标记，且该位置不是雷
-				{
-					break;
-				}
-				if (strcmp(m_grid[i][j].getImageName(),imageName[markUnknow]) == 0)//如果有问号
-				{
-					break;
-				}
-			}
-			if (j<m_numberColumns) break;//很重要的一句话，跳出双重循环
-		}
-		if (i==m_numberLines && j==m_numberColumns)
-		{//胜利
-			winnerDialog();//胜利对话框
-		}
-	}
-}
-
-void GUI::countMarkMines(void)
-{
-	//已标记雷数
-	int markCount=0;
+	int markCount = 0;//已标记雷的个数
+	int rightMarkCount=0;//正确标记雷的个数
+	bool isMarkUnknow = false;//是否标记了问号
 	for (int i=0; i<m_numberLines; i++)
 	{
 		for (int j=0; j<m_numberColumns; j++)
 		{
-			if (strcmp(m_grid[i][j].getImageName(),imageName[mark]) == 0) markCount++;
+			if (strcmp(m_grid[i][j].getImageName(),imageName[mark]) == 0)
+			{
+				markCount++;
+				if (m_coreMines.isMine(i,j))//该位置被标记，且该位置是雷
+				{
+					rightMarkCount++;
+				}
+			}
+			if (strcmp(m_grid[i][j].getImageName(),imageName[markUnknow]) == 0)//如果标记了问号，就说明未完成扫雷
+			{
+				isMarkUnknow = true;
+			}
 		}
 	}
 	//显示标记的雷的数量
 	m_pTimeShowBox->setMarkMines(markCount);
 	m_pTimeShowBox->setRemainMines(m_minesCount-markCount);
+	//判断是否成功完成扫雷
+	if (rightMarkCount==m_minesCount 
+		&& markCount==rightMarkCount 
+		&& !isMarkUnknow)//标记总数和标记正确的个数相等，且未出现标记了问号的格子
+	{
+		winnerDialog();//胜利对话框
+	}
 }
+
+//游戏胜利窗口
 void GUI::winnerDialog(void)
 {
 	g_isPauseTime=true;//暂停时间
@@ -121,7 +107,7 @@ void GUI::winnerDialog(void)
 	if (m_level != 0)
 	{
 		const char* str = fl_input(GUIStr[9],"",time);
-		if (strlen(name)==0)
+		if (strlen(str)==0)
 		{
 			strcpy(name,GUIStr[12]);//匿名
 		}
@@ -129,13 +115,17 @@ void GUI::winnerDialog(void)
 		{
 			strcpy(name,str);
 		}
+		saveRecord(time,name);//保存记录
 	}
 	else
 	{
 		fl_message(GUIStr[10],time);
-		return;
 	}
-	saveRecord(time,name);//保存记录
+	if (m_level != 0 && m_level != 3)//如果不是自定义的级别和最高级别就提高一级
+	{
+		m_level++;//高级
+	}
+	updateMap();
 }
 void GUI::saveRecord(int a_useTime, const char* a_userName)
 {

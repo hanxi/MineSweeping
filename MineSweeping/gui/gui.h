@@ -58,7 +58,7 @@ private:
 	void updateMap(void);	//更新地图
 	void updateWindow(void);
 	void saveRecord(int a_useTime, const char* a_userName);//保存记录
-	void countMarkMines(void);
+	int countMarkMines(void);
 };
 
 
