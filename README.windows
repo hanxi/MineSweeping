@@ -1,2 +1,5 @@
 Windows下使用方法
 
+使用vs2005运行vs2005下的vs2005.sln工程
+
+运行编译好的文件在vs2005/release/vs2005.exe
