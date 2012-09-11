@@ -1,0 +1,8 @@
+Linux下使用方法
+
+重新编译需要安装CMake
+
+进入build目录
+$make
+$./bin/MineSweeping
+
